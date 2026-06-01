@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Explorer — Budget Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Sidebar Navigation ─────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">✈</div>
+      <div>
+        <div class="brand-name">Travel Explorer</div>
+        <div class="brand-sub">Budget Tracker</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+        <span class="nav-icon">🗺</span> Dashboard
+      </button>
+      <button class="nav-btn" data-view="trips" onclick="switchView('trips')">
+        <span class="nav-icon">🧳</span> My Trips
+      </button>
+      <button class="nav-btn" data-view="expenses" onclick="switchView('expenses')">
+        <span class="nav-icon">💳</span> Expenses
+      </button>
+      <button class="nav-btn" data-view="analytics" onclick="switchView('analytics')">
+        <span class="nav-icon">📊</span> Analytics
+      </button>
+    </nav>
+
+    <div class="sidebar-trip-select">
+      <div class="sidebar-section-label">Active Trip</div>
+      <select id="globalTripSelect" onchange="onTripSelect(this.value)">
+        <option value="">— Select a trip —</option>
+      </select>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="db-status" id="dbStatus">
+        <span class="db-dot"></span> Connected
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Mobile Header ──────────────────────────────────────── -->
+  <header class="mobile-header">
+    <button onclick="toggleSidebar()" class="hamburger">☰</button>
+    <span class="mobile-brand">✈ Travel Explorer</span>
+  </header>
+
+  <!-- ── Main Content ───────────────────────────────────────── -->
+  <main class="main-content" id="mainContent">
+
+    <!-- DASHBOARD VIEW -->
+    <section class="view" id="view-dashboard">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <button class="btn btn-primary" onclick="openModal('tripModal')">+ New Trip</button>
+      </div>
+      <div class="stats-row" id="dashStats">
+        <div class="stat-card">
+          <div class="stat-icon">🧳</div>
+          <div class="stat-value" id="stat-trips">0</div>
+          <div class="stat-label">Total Trips</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-budget">$0</div>
+          <div class="stat-label">Total Budget</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💸</div>
+          <div class="stat-value" id="stat-spent">$0</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="stat-remaining">$0</div>
+          <div class="stat-label">Remaining</div>
+        </div>
+      </div>
+      <div class="section-title">Your Trips</div>
+      <div class="trip-grid" id="tripGrid">
+        <div class="empty-state">
+          <div class="empty-icon">🌍</div>
+          <p>No trips yet. Create your first adventure!</p>
+          <button class="btn btn-primary" onclick="openModal('tripModal')">Add a Trip</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRIPS VIEW -->
+    <section class="view hidden" id="view-trips">
+      <div class="page-header">
+        <h1 class="page-title">My Trips</h1>
+        <button class="btn btn-primary" onclick="openModal('tripModal')">+ New Trip</button>
+      </div>
+      <div class="trips-table-wrap">
+        <table class="data-table" id="tripsTable">
+          <thead>
+            <tr>
+              <th>Trip</th><th>Destination</th><th>Dates</th>
+              <th>Currency</th><th>Budget</th><th>Spent</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tripsTableBody">
+            <tr><td colspan="8" class="empty-row">No trips found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXPENSES VIEW -->
+    <section class="view hidden" id="view-expenses">
+      <div class="page-header">
+        <h1 class="page-title">Expenses</h1>
+        <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Add Expense</button>
+      </div>
+      <div class="expense-trip-bar">
+        <div class="expense-trip-info" id="expenseTripInfo">Select a trip to view expenses</div>
+        <div class="budget-bar-wrap" id="budgetBarWrap" style="display:none">
+          <div class="budget-bar-label">
+            <span>Budget Used: <strong id="budgetPct">0%</strong></span>
+            <span id="budgetRemLabel"></span>
+          </div>
+          <div class="budget-bar-track">
+            <div class="budget-bar-fill" id="budgetBarFill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="expense-filters">
+        <select id="filterCategory" onchange="filterExpenses()">
+          <option value="">All Categories</option>
+          <option value="accommodation">🏨 Accommodation</option>
+          <option value="food">🍜 Food & Drink</option>
+          <option value="transport">🚗 Transport</option>
+          <option value="shopping">🛍 Shopping</option>
+          <option value="activities">🎯 Activities</option>
+          <option value="health">💊 Health</option>
+          <option value="communication">📱 Communication</option>
+          <option value="visa">🛂 Visa & Fees</option>
+          <option value="insurance">🛡 Insurance</option>
+          <option value="other">📦 Other</option>
+        </select>
+        <select id="filterPayment" onchange="filterExpenses()">
+          <option value="">All Payments</option>
+          <option value="cash">💵 Cash</option>
+          <option value="card">💳 Card</option>
+          <option value="digital">📱 Digital</option>
+          <option value="other">Other</option>
+        </select>
+        <input type="text" id="filterSearch" placeholder="Search expenses…" oninput="filterExpenses()" />
+      </div>
+      <div class="expenses-list" id="expensesList">
+        <div class="empty-state">
+          <div class="empty-icon">💳</div>
+          <p>Select a trip and add your first expense.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANALYTICS VIEW -->
+    <section class="view hidden" id="view-analytics">
+      <div class="page-header">
+        <h1 class="page-title">Analytics</h1>
+      </div>
+      <div class="analytics-trip-selector">
+        <label>Analysing trip:</label>
+        <select id="analyticsTripSelect" onchange="loadAnalytics(this.value)">
+          <option value="">— Select a trip —</option>
+        </select>
+      </div>
+      <div id="analyticsContent">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>Select a trip to view spending analytics.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODALS
+  ════════════════════════════════════════════════════════════ -->
+
+  <!-- Trip Modal -->
+  <div class="modal-overlay hidden" id="tripModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="tripModalTitle">New Trip</h2>
+        <button class="modal-close" onclick="closeModal('tripModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="tripId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Trip Name *</label>
+            <input type="text" id="tripName" placeholder="e.g. Bali Escape" />
+          </div>
+          <div class="form-group">
+            <label>Destination *</label>
+            <input type="text" id="tripDestination" placeholder="e.g. Bali, Indonesia" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="tripStartDate" />
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="tripEndDate" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Currency</label>
+            <select id="tripCurrency">
+              <option value="USD">USD — US Dollar</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="AUD">AUD — Australian Dollar</option>
+              <option value="NZD">NZD — New Zealand Dollar</option>
+              <option value="JPY">JPY — Japanese Yen</option>
+              <option value="CAD">CAD — Canadian Dollar</option>
+              <option value="SGD">SGD — Singapore Dollar</option>
+              <option value="THB">THB — Thai Baht</option>
+              <option value="IDR">IDR — Indonesian Rupiah</option>
+              <option value="MYR">MYR — Malaysian Ringgit</option>
+              <option value="PHP">PHP — Philippine Peso</option>
+              <option value="INR">INR — Indian Rupee</option>
+              <option value="CNY">CNY — Chinese Yuan</option>
+              <option value="HKD">HKD — Hong Kong Dollar</option>
+              <option value="KRW">KRW — Korean Won</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Total Budget</label>
+            <input type="number" id="tripBudget" placeholder="0.00" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="tripNotes" placeholder="Any notes about this trip…" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('tripModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTrip()">Save Trip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-overlay hidden" id="expenseModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="expenseModalTitle">Add Expense</h2>
+        <button class="modal-close" onclick="closeModal('expenseModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="expenseId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="expenseCategory">
+              <option value="accommodation">🏨 Accommodation</option>
+              <option value="food">🍜 Food & Drink</option>
+              <option value="transport">🚗 Transport</option>
+              <option value="shopping">🛍 Shopping</option>
+              <option value="activities">🎯 Activities</option>
+              <option value="health">💊 Health</option>
+              <option value="communication">📱 Communication</option>
+              <option value="visa">🛂 Visa & Fees</option>
+              <option value="insurance">🛡 Insurance</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount *</label>
+            <input type="number" id="expenseAmount" placeholder="0.00" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="expenseDescription" placeholder="What did you spend on?" />
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="expenseDate" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select id="expensePayment">
+              <option value="cash">💵 Cash</option>
+              <option value="card">💳 Card</option>
+              <option value="digital">📱 Digital</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <input type="text" id="expenseNotes" placeholder="Optional notes…" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('expenseModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage">Are you sure you want to delete this item?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+        <button class="btn btn-danger" id="confirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
