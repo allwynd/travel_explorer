@@ -10,6 +10,7 @@ let currentView = 'dashboard';
 
 const CATEGORY_META = {
   accommodation: { icon: '🏨', label: 'Accommodation', color: '#3b82f6' },
+  flights:       { icon: '✈️', label: 'Flights',       color: '#0ea5e9' },
   food:          { icon: '🍜', label: 'Food & Drink',  color: '#f59e0b' },
   transport:     { icon: '🚗', label: 'Transport',     color: '#22c55e' },
   shopping:      { icon: '🛍', label: 'Shopping',      color: '#a855f7' },

@@ -13,7 +13,7 @@ const tripSchema = new mongoose.Schema({
 
 // ─── Expense Schema ───────────────────────────────────────────────────────────
 const EXPENSE_CATEGORIES = [
-  'accommodation', 'flights', 'food', 'transport', 'shopping',
+  'accommodation', 'food', 'transport', 'flights', 'shopping',
   'activities', 'health', 'communication', 'visa', 'insurance', 'other'
 ];
 
