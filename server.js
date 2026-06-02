@@ -1,4 +1,22 @@
-require('dotenv').config();
+// ─── Load & validate environment variables FIRST ─────────────────────────────
+const dotenvResult = require('dotenv').config();
+
+if (dotenvResult.error) {
+  console.warn('');
+  console.warn('⚠️  WARNING: No .env file found.');
+  console.warn('   Copy .env.example to .env and set DB_TYPE=mongodb to persist data.');
+  console.warn('   Running without a .env means data will be LOST on every restart.');
+  console.warn('');
+}
+
+if (!process.env.DB_TYPE) {
+  console.warn('');
+  console.warn('⚠️  WARNING: DB_TYPE is not set in your environment.');
+  console.warn('   Falling back to in-memory store — all data lost on restart.');
+  console.warn('   Set DB_TYPE=mongodb (and MONGODB_URI) in your .env to persist data.');
+  console.warn('');
+}
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -28,8 +46,9 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    dbType: process.env.DB_TYPE || 'memory',
+    dbType: process.env.DB_TYPE || 'memory (no DB_TYPE set — data not persisted)',
     environment: process.env.NODE_ENV || 'development',
+    envFileLoaded: !dotenvResult.error,
   });
 });
 
@@ -49,8 +68,9 @@ const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
     console.log(`\n🌍 Travel Explorer running at http://localhost:${PORT}`);
-    console.log(`📊 DB Type: ${process.env.DB_TYPE || 'memory (no DB_TYPE set)'}`);
-    console.log(`🌱 Environment: ${process.env.NODE_ENV || 'development'}\n`);
+    console.log(`📊 DB Type    : ${process.env.DB_TYPE || '⚠️  NOT SET — using in-memory store'}`);
+    console.log(`🌱 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📄 .env file  : ${dotenvResult.error ? '❌ not found' : '✅ loaded'}\n`);
   });
 };
 
